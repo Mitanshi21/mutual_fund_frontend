@@ -9,13 +9,7 @@ export const postExcel = async (files) => {
         formData.append("files", element)
     });
 
-    const response = await axios.post(`${url}/upload-excel`, formData,
-        {
-            headers: {
-                "Content-Type": "multipart/form-data"
-            }
-        }
-    )
+    const response = await axios.post(`${url}/AMCs/upload-excel`, formData)
 
     return response.data
 }

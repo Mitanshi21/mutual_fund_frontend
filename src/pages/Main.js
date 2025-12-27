@@ -35,13 +35,14 @@ export default function Main() {
         }
 
         try {
+            console.log("Selected files:", files);
+
             const res = await postExcel(files);
             alert(res.message);
         } catch (error) {
             console.log("Error While Fetching the Files:", error);
             alert("Upload Failed!!")
         }
-        console.log("Selected files:", files);
     };
 
     return (
