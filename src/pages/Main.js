@@ -38,6 +38,8 @@ export default function Main() {
             console.log("Selected files:", files);
 
             const res = await postExcel(files);
+            console.log("res:" + res.message);
+
             alert(res.message);
         } catch (error) {
             console.log("Error While Fetching the Files:", error);
