@@ -1,6 +1,14 @@
+/* Row wrapper */
+.flexbox {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 /* Page wrapper */
 .upload-container {
-  max-width: 420px;
+  max-width: 80vw;
   margin: 60px auto;
   padding: 25px;
   background: #ffffff;
@@ -18,16 +26,7 @@
 
 /* Form groups */
 .form-group {
-  margin-bottom: 16px;
-}
-
-/* Labels */
-.form-group label {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 6px;
-  font-weight: 500;
-  color: #374151;
+  flex: 1;
 }
 
 /* Select & Input */
@@ -49,34 +48,36 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
-/* File input fix */
-.form-group input[type="file"] {
-  padding: 8px;
-}
-
-/* Submit button */
-.submit-btn {
-  width: 100%;
-  padding: 12px;
+/* Buttons */
+.submit-btn,
+.add-btn {
+  padding: 10px 16px;
   background: linear-gradient(90deg, #2563eb, #1d4ed8);
   color: white;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* Hover effect */
-.submit-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
+.add-btn {
+  margin-right: 10px;
+  background: linear-gradient(90deg, #eb255d, #d81d62);
 }
 
-/* Mobile responsive */
-@media (max-width: 480px) {
-  .upload-container {
-    margin: 30px 15px;
+.remove-btn {
+  background: #ef4444;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .flexbox {
+    flex-direction: column;
   }
 }

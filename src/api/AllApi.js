@@ -1,15 +1,34 @@
 import axios from "axios";
 
-const url = "https://localhost:7064/api"
+const url = "https://localhost:7067/api"
 
-export const postExcel = async (files) => {
-    const formData = new FormData()
+export const postExcel = async (rows) => {
+    const formData = new FormData();
 
-    files.forEach(element => {
-        formData.append("files", element)
+    rows.forEach((row, index) => {
+        formData.append(`rows[${index}].amc_id`, row.amc);
+        formData.append(`rows[${index}].portfolio_type_id`, row.portfolio);
+
+        row.files.forEach(file => {
+            formData.append(`rows[${index}].files`, file);
+        });
     });
 
-    const response = await axios.post(`${url}/FileUpload/upload-excel`, formData)
+    const res = await axios.post(
+        `${url}/FileUpload/upload-excel`,
+        formData
+    );
 
-    return response.data
+    return res.data;
+};
+
+
+export const getAllAMCs = async () => {
+    const res = await axios.get(`${url}/AMCs`)
+    return res.data
+}
+
+export const getAllPortfolioDisclosure = async () => {
+    const res = await axios.get(`${url}/PortfolioDisclosure`)
+    return res.data
 }
