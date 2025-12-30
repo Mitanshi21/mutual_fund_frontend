@@ -3,25 +3,27 @@ import { getAllAMCs, getAllPortfolioDisclosure, postExcel } from "../api/AllApi"
 
 export default function Main() {
     const MAX_ROWS = 10;
-    const [allAMCs, setAllAMCs] = useState();
-    const [allPortfolio, setAllPortfolio] = useState();
+    const [allAMCs, setAllAMCs] = useState([]); // Initialize as empty array
+    const [allPortfolio, setAllPortfolio] = useState([]); // Initialize as empty array
 
     const fetchAllAmcs_PortfolioDisclosure = async () => {
         let res = await getAllAMCs();
-        setAllAMCs(res)
-        // console.log(res);
+        setAllAMCs(res || []);
 
-        res = await getAllPortfolioDisclosure()
-        setAllPortfolio(res)
-    }
+        res = await getAllPortfolioDisclosure();
+        setAllPortfolio(res || []);
+    };
 
     useEffect(() => {
-        fetchAllAmcs_PortfolioDisclosure()
-    }, [])
+        fetchAllAmcs_PortfolioDisclosure();
+    }, []);
 
+    // Helper to generate a unique ID for keys
+    const generateId = () => Date.now() + Math.random();
 
+    // 1. Initialize with an ID
     const [rows, setRows] = useState([
-        { amc: "", portfolio: "", files: [] }
+        { id: generateId(), amc: "", portfolio: "", files: [] }
     ]);
 
     const addRow = () => {
@@ -30,11 +32,13 @@ export default function Main() {
             return;
         }
 
+        // 2. Add ID when creating new row
         setRows([
             ...rows,
-            { amc: "", portfolio: "", files: [] }
+            { id: generateId(), amc: "", portfolio: "", files: [] }
         ]);
     };
+
     const removeRow = (index) => {
         setRows(rows.filter((_, i) => i !== index));
     };
@@ -47,21 +51,20 @@ export default function Main() {
 
     const handleFileChange = (index, e) => {
         const selectedFiles = Array.from(e.target.files);
-
         const allowedTypes = [
-            "application/vnd.ms-excel", // .xls
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" // .xlsx
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         ];
 
-        const validFiles = [];
+        // If user hits cancel in file dialog, selectedFiles might be empty
+        if (selectedFiles.length === 0) return;
 
         for (let file of selectedFiles) {
             if (!allowedTypes.includes(file.type)) {
                 alert(`Invalid file: ${file.name}`);
-                e.target.value = null;
+                e.target.value = null; // Clear input visually
                 return;
             }
-            validFiles.push(file);
         }
 
         const updated = [...rows];
@@ -83,22 +86,24 @@ export default function Main() {
             const res = await postExcel(rows);
             alert(res.message);
 
-            // reset
-            setRows([{ amc: "", portfolio: "", files: [] }]);
+            // 3. Reset with a NEW unique ID
+            // This forces React to destroy the old inputs and create fresh ones
+            setRows([{ id: generateId(), amc: "", portfolio: "", files: [] }]);
+
         } catch (err) {
             console.error(err);
             alert("Upload failed");
         }
     };
 
-
     return (
         <div className="upload-container">
             <h2>Upload AMC Portfolio Files</h2>
             <hr />
             <form onSubmit={handleSubmit}>
+                {/* 4. Use row.id as the key, NOT the index */}
                 {rows.map((row, index) => (
-                    <div className="flexbox" key={index}>
+                    <div className="flexbox" key={row.id}>
 
                         <div className="form-group">
                             <label>Select AMC:</label>
@@ -161,8 +166,6 @@ export default function Main() {
                     </button>
                 </div>
             </form>
-
-
         </div>
     );
 }
