@@ -6,6 +6,12 @@ export default function Main() {
     const [allAMCs, setAllAMCs] = useState([]); // Initialize as empty array
     const [allPortfolio, setAllPortfolio] = useState([]); // Initialize as empty array
 
+    const [loading, setLoading] = useState(false);
+    const [uploadPercent, setUploadPercent] = useState(0);
+    const [statusMessage, setStatusMessage] = useState("");
+
+    const [warnings, setWarnings] = useState([]);
+
     const fetchAllAmcs_PortfolioDisclosure = async () => {
         let res = await getAllAMCs();
         setAllAMCs(res || []);
@@ -83,16 +89,44 @@ export default function Main() {
         }
 
         try {
-            const res = await postExcel(rows);
-            alert(res.message);
+            setLoading(true);
+            setUploadPercent(0);
+            setStatusMessage("Uploading Files...");
+            setWarnings([]);
+            // const res = await postExcel(rows);
+            // alert(res.message);
 
-            // 3. Reset with a NEW unique ID
-            // This forces React to destroy the old inputs and create fresh ones
-            setRows([{ id: generateId(), amc: "", portfolio: "", files: [] }]);
+            // // 3. Reset with a NEW unique ID
+            // // This forces React to destroy the old inputs and create fresh ones
+            // setRows([{ id: generateId(), amc: "", portfolio: "", files: [] }]);
+
+            // 🟢 2. Call the function with the progress callback
+            const response = await postExcel(rows, (percent) => {
+                setUploadPercent(percent);
+
+                // Visual feedback change when upload hits 100% but server is still thinking
+                if (percent === 100) {
+                    setStatusMessage("Processing Excel Data... Please wait.");
+                }
+            });
+
+            if (response.warnings && response.warnings.length > 0) {
+                setStatusMessage("Completed with Warnings");
+                setWarnings(response.warnings); // Save to state
+                alert(`Process finished, but ${response.warnings.length} funds were missing. Check the list below.`);
+            } else {
+                setStatusMessage("Upload Successful!");
+                setRows([{ id: generateId(), amc: "", portfolio: "", files: [] }]);
+
+                alert("All files processed successfully!");
+            }
 
         } catch (err) {
             console.error(err);
             alert("Upload failed");
+        } finally {
+            // Reset loading state (optionally keep success message)
+            setLoading(false);
         }
     };
 
@@ -166,6 +200,56 @@ export default function Main() {
                     </button>
                 </div>
             </form>
+
+            {/* 🟢 3. The Loader / Progress Bar UI */}
+            {loading && (
+                <div style={{ marginTop: "20px", border: "1px solid #ccc", padding: "10px" }}>
+
+                    {/* Text Status */}
+                    <p><strong>{statusMessage}</strong></p>
+
+                    {/* Progress Bar Container */}
+                    <div style={{ width: "100%", backgroundColor: "#e0e0e0", borderRadius: "5px" }}>
+                        {/* Progress Bar Fill */}
+                        <div
+                            style={{
+                                width: `${uploadPercent}%`,
+                                backgroundColor: uploadPercent < 100 ? "#3b82f6" : "#22c55e", // Blue -> Green
+                                height: "20px",
+                                borderRadius: "5px",
+                                transition: "width 0.3s ease",
+                                textAlign: "center",
+                                color: "white",
+                                fontSize: "12px",
+                                lineHeight: "20px"
+                            }}
+                        >
+                            {uploadPercent}%
+                        </div>
+                    </div>
+
+                    {uploadPercent === 100 && (
+                        <p style={{ fontSize: "12px", color: "#666" }}>
+                            (Server is extracting data from Excel, this might take a moment...)
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {/* 🟢 NEW: Warning List Section */}
+            {!loading && warnings.length > 0 && (
+                <div style={{ marginTop: "20px", padding: "15px", border: "1px solid #f5c6cb", backgroundColor: "#f8d7da", borderRadius: "5px", color: "#721c24" }}>
+                    <h4>⚠️ Processed with Warnings:</h4>
+                    <p>The following funds were not found in the Master Database and were skipped:</p>
+                    <ul style={{ paddingLeft: "20px", marginTop: "10px", maxHeight: "200px", overflowY: "auto" }}>
+                        {warnings.map((warn, idx) => (
+                            <li key={idx} style={{ fontSize: "13px", marginBottom: "5px" }}>
+                                {warn}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 }

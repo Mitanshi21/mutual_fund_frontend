@@ -2,7 +2,7 @@ import axios from "axios";
 
 const url = "https://localhost:7067/api"
 
-export const postExcel = async (rows) => {
+export const postExcel = async (rows, onProgress) => {
     const formData = new FormData();
 
     rows.forEach((row, index) => {
@@ -16,7 +16,22 @@ export const postExcel = async (rows) => {
 
     const res = await axios.post(
         `${url}/FileUpload/upload-excel`,
-        formData
+        formData,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+            // 🟢 Axios native event for upload progress
+            onUploadProgress: (progressEvent) => {
+                if (onProgress && progressEvent.total) {
+                    const percentCompleted = Math.round(
+                        (progressEvent.loaded * 100) / progressEvent.total
+                    );
+
+                    onProgress(percentCompleted);
+                }
+            },
+        }
     );
 
     return res.data;
