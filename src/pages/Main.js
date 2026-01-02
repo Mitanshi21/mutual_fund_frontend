@@ -10,7 +10,8 @@ export default function Main() {
     const [uploadPercent, setUploadPercent] = useState(0);
     const [statusMessage, setStatusMessage] = useState("");
 
-    const [warnings, setWarnings] = useState([]);
+    // const [warnings, setWarnings] = useState([]);
+    const [logUrl, setLogUrl] = useState("");
 
     const fetchAllAmcs_PortfolioDisclosure = async () => {
         let res = await getAllAMCs();
@@ -92,7 +93,8 @@ export default function Main() {
             setLoading(true);
             setUploadPercent(0);
             setStatusMessage("Uploading Files...");
-            setWarnings([]);
+            // setWarnings([]);
+            setLogUrl("");
             // const res = await postExcel(rows);
             // alert(res.message);
 
@@ -110,16 +112,20 @@ export default function Main() {
                 }
             });
 
-            if (response.warnings && response.warnings.length > 0) {
-                setStatusMessage("Completed with Warnings");
-                setWarnings(response.warnings); // Save to state
-                alert(`Process finished, but ${response.warnings.length} funds were missing. Check the list below.`);
-            } else {
-                setStatusMessage("Upload Successful!");
-                setRows([{ id: generateId(), amc: "", portfolio: "", files: [] }]);
-
-                alert("All files processed successfully!");
+            if (response.logDetailsUrl) {
+                setLogUrl(response.logDetailsUrl);
             }
+
+            // if (response.warnings && response.warnings.length > 0) {
+            //     setStatusMessage("Completed with Warnings");
+            //     setWarnings(response.warnings); // Save to state
+            //     alert(`Process finished, but ${response.warnings.length} funds were missing. Check the list below.`);
+            // } else {
+            //     setStatusMessage("Upload Successful!");
+            //     setRows([{ id: generateId(), amc: "", portfolio: "", files: [] }]);
+
+            //     alert("All files processed successfully!");
+            // }
 
         } catch (err) {
             console.error(err);
@@ -237,17 +243,41 @@ export default function Main() {
             )}
 
             {/* 🟢 NEW: Warning List Section */}
-            {!loading && warnings.length > 0 && (
-                <div style={{ marginTop: "20px", padding: "15px", border: "1px solid #f5c6cb", backgroundColor: "#f8d7da", borderRadius: "5px", color: "#721c24" }}>
-                    <h4>⚠️ Processed with Warnings:</h4>
-                    <p>The following funds were not found in the Master Database and were skipped:</p>
-                    <ul style={{ paddingLeft: "20px", marginTop: "10px", maxHeight: "200px", overflowY: "auto" }}>
-                        {warnings.map((warn, idx) => (
-                            <li key={idx} style={{ fontSize: "13px", marginBottom: "5px" }}>
-                                {warn}
-                            </li>
-                        ))}
-                    </ul>
+            {/* {!loading && warnings.length > 0 && ( */}
+            {/* // <div style={{ marginTop: "20px", padding: "15px", border: "1px solid #f5c6cb", backgroundColor: "#f8d7da", borderRadius: "5px", color: "#721c24" }}>
+                    // <h4>⚠️ Processed with Warnings:</h4>
+                    // <p>The following funds were not found in the Master Database and were skipped:</p>
+                //     <ul style={{ paddingLeft: "20px", marginTop: "10px", maxHeight: "200px", overflowY: "auto" }}> */}
+            {/* //         {warnings.map((warn, idx) => ( */}
+            {/* //             <li key={idx} style={{ fontSize: "13px", marginBottom: "5px" }}> */}
+            {/* //                 {warn} */}
+            {/* //             </li> */}
+            {/* //         ))} */}
+            {/* //     </ul> */}
+            {/* // </div> */}
+            {/* // )} */}
+
+            {/* 🟢 3. LOG FILE LINK SECTION */}
+            {!loading && logUrl && (
+                <div style={{
+                    marginTop: "15px",
+                    padding: "10px",
+                    backgroundColor: "#f0f9ff",
+                    border: "1px solid #bae6fd",
+                    borderRadius: "5px",
+                    color: "#0284c7"
+                }}>
+                    <p style={{ margin: 0 }}>
+                        📄 <strong>Execution Logs:</strong>{" "}
+                        <a
+                            href={logUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "#0369a1", textDecoration: "underline", fontWeight: "bold" }}
+                        >
+                            View/Download Log File
+                        </a>
+                    </p>
                 </div>
             )}
         </div>
